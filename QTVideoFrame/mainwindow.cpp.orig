@@ -1,0 +1,95 @@
+#include "mainwindow.h"
+#include "ui_mainwindow.h"
+#include <qdebug.h>
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow),mplayer(parent, QMediaPlayer::VideoSurface)
+{
+    ui->setupUi(this);
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_cmdOpenVideoFile_clicked()
+{
+    QFileDialog fd;
+    fd.show();
+    fd.exec();
+    QString strFileName = fd.selectedFiles().at(0);
+    //mplayer.setVideoOutput(&vw);
+    vsurface = new myQAbstractVideoSurface();
+    mplayer.setVideoOutput(this->videoSurface());
+
+
+    connect(vsurface, SIGNAL(fnSurfaceStopped(QPixmap)),
+            this, SLOT(onMediaPlayerStop(QPixmap)),Qt::QueuedConnection);
+    connect(vsurface, SIGNAL(activeChanged(bool)),
+                    this, SLOT(onSurfaceStateChanged(bool)),Qt::QueuedConnection
+            );
+
+    /*
+    vw.setBaseSize(ui->lblFrameImage->size());
+    vw.setSizeIncrement(ui->lblFrameImage->size());
+    vw.setSizePolicy(ui->lblFrameImage->sizePolicy());
+    vw.setParent(this->centralWidget());
+    this->centralWidget()->layout()->addWidget(&vw);
+    ui->lblFrameImage->deleteLater();
+    */
+    //mplayer.stop();
+    mplayer.setMedia(QUrl::fromLocalFile(strFileName));
+    while(true){
+        if(mplayer.mediaStatus()==QMediaPlayer::LoadedMedia){
+    qDebug()<<"duration="<<mplayer.duration()/1000.0f;
+    break;
+        }
+    }
+
+    ui->sldDuration->setMaximum(10);//static_cast<int>(mplayer.duration()/1000));
+    ui->sldDuration->setMinimum(0);
+    mplayer.setPosition(60*1000);
+    mplayer.setMuted(true);
+
+    //ui->lblFrameImage->setPixmap(QPixmap::fromImage(vsurface.fnGetFrame()));
+    //ui->lblFrameImage->update();
+    //mplayer.pause();
+    //mplayer.stop();
+    //vw.foregroundRole()
+    //vsurface.
+
+}
+
+void MainWindow::on_cmdCapture_clicked()
+{
+    //ui->lblFrameImage->setPixmap(QPixmap::fromImage(vsurface.fnGetFrame()));
+    //ui->lblFrameImage->repaint();
+    qDebug()<<"duration="<<mplayer.duration()/1000.0f;
+    //mplayer.play();
+}
+
+void MainWindow::onMediaPlayerStop(QPixmap pix)
+{
+    ui->lblActual->setPixmap(pix);
+    ui->lblActual->update();
+    vsurface->stop();
+    //vsurface->deleteLater();
+    mplayer.stop();
+}
+
+void MainWindow::onSurfaceStateChanged(bool blnValue)
+{
+    if(!blnCanStop){
+    if(vsurface->isActive()){
+        //blnCanStop=true;
+    }
+    }
+    else{
+        if(!vsurface->isActive()){
+            //mplayer.stop();
+        }
+    }
+
+}
