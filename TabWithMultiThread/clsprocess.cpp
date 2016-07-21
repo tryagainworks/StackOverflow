@@ -8,22 +8,25 @@ clsProcess::clsProcess(QObject *parent) : QObject(parent)
 
 void clsProcess::doWorkInterrupt()
 {
-    iCount=500;
+	iCount=500;
 }
 
 void clsProcess::doWork()
 {
 	iCount++;
-    emit fnUpdateGUI(iCount);
+	emit fnUpdateGUI(iCount);
 	qDebug()<<"Process done here" << iCount << "\n";
-    //pause the current thread for 100 millisecods (1/10 seconds)
+	//pause the current thread for 100 millisecods (1/10 seconds)
 	this->thread()->msleep(100);
-    if(iCount>=500)
+	if(iCount>=500)
 	{
 		emit workFinished();
 	}
-	// allow the thread's event loop to process other events before doing more "work"
-	// for instance, your start/stop signals from the MainWindow
-    QMetaObject::invokeMethod( this, "doWork", Qt::QueuedConnection);
+	else
+	{
+		// allow the thread's event loop to process other events before doing more "work"
+		// for instance, your start/stop signals from the MainWindow
+		QMetaObject::invokeMethod( this, "doWork", Qt::QueuedConnection);
+	}
 }
 
